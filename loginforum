@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D User Registration Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            height: 100%;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #0f172a; /* Dark base color */
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: translateZ(0); /* Force GPU acceleration */
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .input-group:focus-within label {
+            color: #6366f1;
+        }
+
+        .success-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Custom scrollbar for small height screens */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="main-container">
+        <div class="glass-card w-full max-w-md p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-black text-indigo-900 tracking-tight">Create Account</h1>
+                <p class="text-indigo-700/60 font-medium mt-1">Join our 3D interactive world</p>
+            </div>
+
+            <form id="registrationForm" class="space-y-4">
+                <!-- Name Field -->
+                <div class="input-group">
+                    <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Full Name</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-400">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" id="name" name="name" required
+                            class="block w-full pl-10 pr-3 py-3 border border-indigo-100 rounded-xl bg-white/50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition duration-200 text-sm"
+                            placeholder="John Doe">
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div class="input-group">
+                    <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" id="email" name="email" required
+                            class="block w-full pl-10 pr-3 py-3 border border-indigo-100 rounded-xl bg-white/50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition duration-200 text-sm"
+                            placeholder="john@example.com">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Age Field -->
+                    <div class="input-group">
+                        <label for="age" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Age</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-400">
+                                <i class="fas fa-calendar-alt"></i>
+                            </span>
+                            <input type="number" id="age" name="age" required min="1" max="120"
+                                class="block w-full pl-10 pr-3 py-3 border border-indigo-100 rounded-xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition duration-200 text-sm"
+                                placeholder="25">
+                        </div>
+                    </div>
+
+                    <!-- Gender Field -->
+                    <div class="input-group">
+                        <label for="gender" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Gender</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-400 pointer-events-none">
+                                <i class="fas fa-venus-mars"></i>
+                            </span>
+                            <select id="gender" name="gender" required
+                                class="block w-full pl-10 pr-3 py-3 border border-indigo-100 rounded-xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition duration-200 text-sm appearance-none">
+                                <option value="" disabled selected>Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WhatsApp Field -->
+                <div class="input-group">
+                    <label for="whatsapp" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">WhatsApp Number</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-400">
+                            <i class="fab fa-whatsapp"></i>
+                        </span>
+                        <input type="tel" id="whatsapp" name="whatsapp" required
+                            class="block w-full pl-10 pr-3 py-3 border border-indigo-100 rounded-xl bg-white/50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition duration-200 text-sm"
+                            placeholder="+1 234 567 8900">
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 mt-4 uppercase tracking-widest">
+                    Submit Details
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Message Modal -->
+    <div id="successModal" class="success-modal">
+        <div class="bg-white p-8 rounded-2xl max-w-sm w-full mx-4 text-center shadow-2xl border border-indigo-100">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-rocket text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-indigo-900 mb-2">Welcome Aboard!</h2>
+            <p id="successMessage" class="text-gray-600 mb-8"></p>
+            <button onclick="closeModal()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg uppercase tracking-wider">
+                Explore Now
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, shapes = [];
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        function init3D() {
+            scene = new THREE.Scene();
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('bg-canvas'),
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Add Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0x6366f1, 2);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            const pointLight2 = new THREE.PointLight(0xa855f7, 2);
+            pointLight2.position.set(-5, -5, 2);
+            scene.add(pointLight2);
+
+            // Create floating shapes
+            const geometries = [
+                new THREE.IcosahedronGeometry(1, 0),
+                new THREE.TorusGeometry(0.7, 0.2, 16, 100),
+                new THREE.OctahedronGeometry(0.8, 0),
+                new THREE.TetrahedronGeometry(1.2, 0)
+            ];
+
+            for (let i = 0; i < 15; i++) {
+                const material = new THREE.MeshPhongMaterial({
+                    color: i % 2 === 0 ? 0x6366f1 : 0xec4899,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.4
+                });
+
+                const mesh = new THREE.Mesh(
+                    geometries[Math.floor(Math.random() * geometries.length)],
+                    material
+                );
+
+                mesh.position.x = (Math.random() - 0.5) * 15;
+                mesh.position.y = (Math.random() - 0.5) * 15;
+                mesh.position.z = (Math.random() - 0.5) * 10;
+
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+
+                mesh.userData = {
+                    rotationSpeed: (Math.random() - 0.5) * 0.01,
+                    movementSpeed: (Math.random() - 0.5) * 0.005
+                };
+
+                shapes.push(mesh);
+                scene.add(mesh);
+            }
+
+            // Event Listeners for Interaction
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX - windowHalfX) * 0.0005;
+            mouseY = (event.clientY - windowHalfY) * 0.0005;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smoothed camera movement
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            camera.position.x = targetX * 10;
+            camera.position.y = -targetY * 10;
+            camera.lookAt(scene.position);
+
+            // Animate shapes
+            shapes.forEach(shape => {
+                shape.rotation.x += shape.userData.rotationSpeed;
+                shape.rotation.y += shape.userData.rotationSpeed;
+                shape.position.y += Math.sin(Date.now() * 0.001 + shape.position.x) * 0.002;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function() {
+            init3D();
+            animate();
+        };
+
+        // --- FORM LOGIC ---
+        const form = document.getElementById('registrationForm');
+        const modal = document.getElementById('successModal');
+        const messagePara = document.getElementById('successMessage');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const name = formData.get('name');
+            messagePara.innerText = `Everything looks perfect, ${name}! Your details have been secured in our 3D cloud.`;
+            modal.style.display = 'flex';
+        });
+
+        function closeModal() {
+            modal.style.display = 'none';
+            form.reset();
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
